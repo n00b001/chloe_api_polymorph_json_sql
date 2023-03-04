@@ -38,10 +38,6 @@ import datetime
 
 import requests as requests
 
-response = requests.get("https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.41&hourly=temperature_2m")
-
-print(response.status_code)
-
 class BaseApiInterface:
     url = None
     def get_data(self):
@@ -52,10 +48,10 @@ class BaseApiInterface:
         pass
 
 class Weather(BaseApiInterface):
-    def __init__(self, url:str, lat:str, long:str):
+    def __init__(self, lat:str, long:str):
         self.url = "https://api.open-meteo.com/v1/forecast"
-        self.lat = ''
-        self.long = ''
+        self.lat = lat
+        self.long = long
     def get_data(self):
         # 'https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.41&hourly=temperature_2m'
         # 'https://api.open-meteo.com/v1/forecast?longditude=52.52&longitude=13.41&hourly=temperature_2m'
@@ -64,14 +60,25 @@ class Weather(BaseApiInterface):
             'longitude': self.long,
         }
         response = requests.get(self.url, params=param_dict)
+        if not response.ok:
+            raise Exception(response)
+        data = response.json()
+        return data
 
-class Catpics:
+class Catfacts:
     def __init__(self):
-        pass
+        self.url = 'https://cat-fact.herokuapp.com/facts'
+
+    def get_data(self):
+        response = requests.get(self.url)
+        if not response.ok:
+            raise Exception(response)
+        data = response.json()
+        return data
 
 class Cpius:
     api_token = "126867625166bb43a51bde9f0c0d50fc4d1d6bab"
-    def __init__(self, url:str):
+    def __init__(self):
         self.url = f"https://www.econdb.com/api/series/CPIFR/?token={self.api_token}&format=json"
     def get_data(self):
         response = requests.get(self.url)
@@ -81,7 +88,18 @@ class Cpius:
         return data
 
 
+# def get_weather()
 
-purfleet_weather = Weather(52.52, 13.41)
-forest_hill_weather = Weather(51.4431, -0.04178)
+def main():
+    response = requests.get(
+        "https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.41&hourly=temperature_2m")
 
+    print(response.status_code)
+
+    p_weather_obj = Weather(52.52, 13.41)
+    fh_weather_obj = Weather(51.4431, -0.04178)
+
+    purfleet_weather = p_weather_obj.get_data()
+
+if __name__ == '__main__':
+    main()
